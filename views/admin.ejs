@@ -1,0 +1,152 @@
+<%- include('partials/header') %>
+
+<div class="container my-4">
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-shield-lock-fill text-danger me-2"></i>Admin Panel
+  </h2>
+
+  <!-- ── Stats (Bootstrap Grid) ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="dash-stat bg-dark text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= users.length %></div>
+        <div class="small">Total Users</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="dash-stat bg-info text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= totalItems %></div>
+        <div class="small">Total Items</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="dash-stat bg-secondary text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= logs.length %></div>
+        <div class="small">Log Entries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bootstrap Nav Tabs ── -->
+  <ul class="nav nav-tabs mb-3" id="adminTabs">
+    <li class="nav-item">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#usersTab">
+        <i class="bi bi-people me-1"></i>Users (<%= users.length %>)
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#logsTab">
+        <i class="bi bi-journal-text me-1"></i>Request Logs (<%= logs.length %>)
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ── Users Tab ── -->
+    <div class="tab-pane fade show active" id="usersTab">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% users.forEach(u => { %>
+                  <tr>
+                    <td class="fw-semibold"><%= u.username %></td>
+                    <td><%= u.email %></td>
+                    <td>
+                      <span class="badge bg-<%= u.role === 'admin' ? 'danger' : u.role === 'member' ? 'primary' : 'secondary' %>">
+                        <%= u.role %>
+                      </span>
+                    </td>
+                    <td><small><%= new Date(u.createdAt).toLocaleDateString('en-CA') %></small></td>
+                    <td>
+                      <!-- Change Role form -->
+                      <form action="/admin/users/<%= u._id %>/role" method="POST" class="d-inline">
+                        <div class="input-group input-group-sm" style="width:180px">
+                          <select class="form-select form-select-sm" name="role">
+                            <% ['admin','member','guest'].forEach(r => { %>
+                              <option value="<%= r %>" <%= u.role === r ? 'selected' : '' %>><%= r %></option>
+                            <% }); %>
+                          </select>
+                          <button class="btn btn-sm btn-outline-primary" type="submit">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                        </div>
+                      </form>
+                      <!-- Delete User form -->
+                      <% if (u._id.toString() !== user._id.toString()) { %>
+                        <form action="/admin/users/<%= u._id %>/delete" method="POST"
+                              class="d-inline delete-form ms-1">
+                          <button class="btn btn-sm btn-outline-danger" type="submit">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Logs Tab (Accountability) ── -->
+    <div class="tab-pane fade" id="logsTab">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive" style="max-height:500px; overflow-y:auto;">
+            <table class="table table-sm table-striped mb-0">
+              <thead class="table-dark sticky-top">
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Method</th>
+                  <th>URL</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Time (ms)</th>
+                  <th>IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% logs.forEach(log => { %>
+                  <tr>
+                    <td><small><%= new Date(log.timestamp).toLocaleString('en-CA') %></small></td>
+                    <td>
+                      <span class="badge bg-<%= log.method === 'GET' ? 'success' : log.method === 'POST' ? 'primary' : 'warning text-dark' %>">
+                        <%= log.method %>
+                      </span>
+                    </td>
+                    <td><small class="text-truncate d-inline-block" style="max-width:200px"><%= log.url %></small></td>
+                    <td>
+                      <span class="badge bg-<%= log.statusCode < 300 ? 'success' : log.statusCode < 400 ? 'info' : 'danger' %>">
+                        <%= log.statusCode %>
+                      </span>
+                    </td>
+                    <td><small><%= log.userRole %></small></td>
+                    <td><small><%= log.responseTime %></small></td>
+                    <td><small><%= log.ipAddress %></small></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

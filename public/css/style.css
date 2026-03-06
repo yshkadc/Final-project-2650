@@ -1,0 +1,75 @@
+/* public/css/style.css */
+
+/* ── Global ── */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Navbar ── */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+/* ── Hero Carousel ── */
+.carousel-item {
+  height: 420px;
+  background-size: cover;
+  background-position: center;
+}
+.carousel-caption h2 { font-size: 2.2rem; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.carousel-caption p  { font-size: 1.1rem; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.carousel-slide-1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+.carousel-slide-2 { background: linear-gradient(135deg, #2d6a4f 0%, #40916c 50%, #74c69d 100%); }
+.carousel-slide-3 { background: linear-gradient(135deg, #7b2d8b 0%, #c77dff 100%); }
+
+/* ── Cards ── */
+.item-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+}
+.item-card .card-header { font-weight: 600; }
+
+/* Expiry badge colours */
+.badge-expired { background-color: #dc3545; }
+.badge-soon    { background-color: #ffc107; color: #212529; }
+.badge-ok      { background-color: #198754; }
+
+/* ── Weather Widget ── */
+#weatherWidget {
+  min-height: 60px;
+}
+
+/* ── Auth forms ── */
+.auth-card {
+  max-width: 450px;
+  margin: 60px auto;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.1);
+}
+
+/* ── Dashboard header ── */
+.dash-stat {
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* ── Admin table ── */
+.table-sm td, .table-sm th { vertical-align: middle; }
+
+/* ── Footer ── */
+footer { font-size: 0.9rem; }
+
+/* ── Responsive adjustments ── */
+@media (max-width: 576px) {
+  .carousel-item { height: 260px; }
+  .carousel-caption h2 { font-size: 1.4rem; }
+}

@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <div class="auth-card card border-0">
+    <div class="card-header bg-success text-white text-center py-3">
+      <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Create Account</h4>
+    </div>
+    <div class="card-body p-4">
+
+      <% if (error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle me-1"></i><%= error %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
+
+      <form action="/register" method="POST" novalidate>
+        <div class="mb-3">
+          <label for="username" class="form-label fw-semibold">Username</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" id="username" name="username"
+                   placeholder="Choose a username" required autofocus>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label fw-semibold">Email</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control" id="email" name="email"
+                   placeholder="your@email.com" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label fw-semibold">Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Create a password" required minlength="6">
+          </div>
+          <small class="text-muted">Minimum 6 characters.</small>
+        </div>
+
+        <div class="mb-4">
+          <label for="role" class="form-label fw-semibold">Account Type</label>
+          <select class="form-select" id="role" name="role">
+            <option value="guest" selected>Guest (view only)</option>
+            <option value="member">Member (can add/edit items)</option>
+          </select>
+          <small class="text-muted">Admin accounts are assigned by an administrator.</small>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-success btn-lg">
+            <i class="bi bi-person-check me-2"></i>Register
+          </button>
+        </div>
+      </form>
+
+      <hr class="my-4">
+      <p class="text-center mb-0">
+        Already have an account?
+        <a href="/login" class="fw-semibold text-decoration-none">Login here</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

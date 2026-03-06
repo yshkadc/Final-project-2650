@@ -1,0 +1,239 @@
+<%- include('partials/header') %>
+
+<div class="container my-4">
+
+  <!-- ── Page Header ── -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-grid-fill text-primary me-2"></i>My Inventory Dashboard
+    </h2>
+    <% if (user && (user.role === 'admin' || user.role === 'member')) { %>
+      <a href="/items/add" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i>Add Item
+      </a>
+    <% } %>
+  </div>
+
+  <!-- ── Stats Row (Bootstrap Grid) ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="dash-stat bg-primary text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= items.length %></div>
+        <div class="small">Total Items</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat bg-danger text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= expired.length %></div>
+        <div class="small">Expired</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat bg-warning text-dark shadow-sm">
+        <div class="fs-2 fw-bold"><%= soon.length %></div>
+        <div class="small">Expiring Soon</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat bg-success text-white shadow-sm">
+        <div class="fs-2 fw-bold"><%= items.filter(i => i.expiryStatus === 'ok').length %></div>
+        <div class="small">Good</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Alerts ── -->
+  <% if (expired.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-octagon-fill me-2"></i>
+      <strong><%= expired.length %> item(s) have expired!</strong> Please remove or replace them.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+  <% if (soon.length > 0) { %>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong><%= soon.length %> item(s)</strong> expire within the next 7 days.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <div class="row g-4">
+
+    <!-- ── Item Cards (Bootstrap Responsive Grid) ── -->
+    <div class="col-lg-8">
+      <% if (items.length === 0) { %>
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+          No items yet. <a href="/items/add">Add your first item!</a>
+        </div>
+      <% } else { %>
+        <div class="row g-3">
+          <% items.forEach(item => { %>
+            <div class="col-sm-6 col-xl-4">
+              <div class="card item-card h-100 shadow-sm"
+                   data-expiry-status="<%= item.expiryStatus %>">
+
+                <!-- Card Header: category colour -->
+                <div class="card-header d-flex justify-content-between align-items-center
+                  <% if (item.category === 'fridge')    { %>bg-info text-white
+                  <% } else if (item.category === 'pantry')   { %>bg-success text-white
+                  <% } else if (item.category === 'medicine') { %>bg-danger text-white
+                  <% } else if (item.category === 'cleaning') { %>bg-secondary text-white
+                  <% } else { %>bg-light<% } %>">
+                  <small class="fw-semibold text-capitalize">
+                    <i class="bi bi-<%= item.category === 'fridge' ? 'snow' :
+                                        item.category === 'pantry' ? 'basket3' :
+                                        item.category === 'medicine' ? 'capsule-pill' :
+                                        item.category === 'cleaning' ? 'stars' : 'box' %> me-1"></i>
+                    <%= item.category %>
+                  </small>
+                  <!-- Expiry badge -->
+                  <% if (item.expiryStatus === 'expired') { %>
+                    <span class="badge badge-expired">Expired</span>
+                  <% } else if (item.expiryStatus === 'soon') { %>
+                    <span class="badge badge-soon">Expiring Soon</span>
+                  <% } else if (item.expiryStatus === 'ok') { %>
+                    <span class="badge badge-ok">Good</span>
+                  <% } %>
+                </div>
+
+                <div class="card-body">
+                  <h6 class="card-title fw-bold mb-1"><%= item.name %></h6>
+                  <p class="card-text mb-1">
+                    <small class="text-muted">
+                      <i class="bi bi-boxes me-1"></i><%= item.quantity %> <%= item.unit %>
+                      &bull;
+                      <i class="bi bi-geo-alt me-1"></i><%= item.location %>
+                    </small>
+                  </p>
+                  <% if (item.expiryDate) { %>
+                    <p class="card-text mb-1">
+                      <small class="<%= item.expiryStatus === 'expired' ? 'text-danger' : item.expiryStatus === 'soon' ? 'text-warning' : 'text-muted' %>">
+                        <i class="bi bi-calendar-event me-1"></i>Expires:
+                        <%= new Date(item.expiryDate).toLocaleDateString('en-CA') %>
+                      </small>
+                    </p>
+                  <% } %>
+                  <% if (item.notes) { %>
+                    <p class="card-text text-muted small mb-0 text-truncate"><%= item.notes %></p>
+                  <% } %>
+                </div>
+
+                <!-- Card Footer: actions + Modal trigger -->
+                <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
+
+                  <!-- View Details Modal Trigger -->
+                  <button type="button" class="btn btn-sm btn-outline-secondary"
+                          data-bs-toggle="modal" data-bs-target="#itemModal"
+                          data-name="<%= item.name %>"
+                          data-category="<%= item.category %>"
+                          data-quantity="<%= item.quantity %>"
+                          data-unit="<%= item.unit %>"
+                          data-location="<%= item.location %>"
+                          data-expiry="<%= item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('en-CA') : 'N/A' %>"
+                          data-notes="<%= item.notes || 'None' %>"
+                          onclick="populateModal(this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  <% if (user && (user.role === 'admin' || user.role === 'member')) { %>
+                    <a href="/items/edit/<%= item._id %>" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="/items/delete/<%= item._id %>" method="POST"
+                          class="delete-form d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ── Sidebar: Weather Widget ── -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-primary text-white">
+          <i class="bi bi-cloud-sun-fill me-2"></i>Weather
+        </div>
+        <div class="card-body">
+          <div class="input-group input-group-sm mb-3">
+            <input type="text" class="form-control" id="cityInput" placeholder="City...">
+            <button class="btn btn-primary btn-sm" id="weatherSearchBtn">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+          <div id="weatherWidget">
+            <p class="text-muted small"><i class="bi bi-hourglass-split"></i> Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Category Filter -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-light fw-semibold">
+          <i class="bi bi-funnel me-1"></i>Categories
+        </div>
+        <div class="card-body d-flex flex-wrap gap-2">
+          <% ['fridge','pantry','medicine','cleaning','other'].forEach(cat => { %>
+            <span class="badge bg-secondary py-2 px-3">
+              <%= items.filter(i => i.category === cat).length %> <%= cat %>
+            </span>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     Bootstrap Modal – Item Details
+     ════════════════════════════════════════════ -->
+<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="itemModalLabel">Item Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-borderless">
+          <tbody>
+            <tr><th>Name</th><td id="modal-name"></td></tr>
+            <tr><th>Category</th><td id="modal-category"></td></tr>
+            <tr><th>Quantity</th><td id="modal-quantity"></td></tr>
+            <tr><th>Location</th><td id="modal-location"></td></tr>
+            <tr><th>Expiry Date</th><td id="modal-expiry"></td></tr>
+            <tr><th>Notes</th><td id="modal-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function populateModal(btn) {
+  document.getElementById('itemModalLabel').textContent = btn.dataset.name;
+  document.getElementById('modal-name').textContent     = btn.dataset.name;
+  document.getElementById('modal-category').textContent = btn.dataset.category;
+  document.getElementById('modal-quantity').textContent = btn.dataset.quantity + ' ' + btn.dataset.unit;
+  document.getElementById('modal-location').textContent = btn.dataset.location;
+  document.getElementById('modal-expiry').textContent   = btn.dataset.expiry;
+  document.getElementById('modal-notes').textContent    = btn.dataset.notes;
+}
+</script>
+
+<%- include('partials/footer') %>
