@@ -1,0 +1,140 @@
+<%- include('partials/header') %>
+
+<!-- ════════════════════════════════════════════
+     Bootstrap Carousel / Slider
+     ════════════════════════════════════════════ -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+  <!-- Indicators -->
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+  </div>
+
+  <!-- Slides -->
+  <div class="carousel-inner">
+    <div class="carousel-item active carousel-slide-1">
+      <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+        <h2><i class="bi bi-house-gear me-2"></i>Smart Home Inventory</h2>
+        <p>Track everything in your home &mdash; pantry, fridge, medicine, and more.</p>
+        <div>
+          <a href="/register" class="btn btn-info text-white me-2">Get Started</a>
+          <a href="/login"    class="btn btn-outline-light">Login</a>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-item carousel-slide-2">
+      <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+        <h2><i class="bi bi-calendar-x me-2"></i>Expiry Date Alerts</h2>
+        <p>Never let food or medicine expire again. Get notified before it's too late.</p>
+        <a href="/register" class="btn btn-light">Start Tracking</a>
+      </div>
+    </div>
+    <div class="carousel-item carousel-slide-3">
+      <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+        <h2><i class="bi bi-cloud-sun me-2"></i>Live Weather Widget</h2>
+        <p>See up-to-date weather for your city, powered by OpenWeatherMap.</p>
+        <a href="#weatherSection" class="btn btn-light">Check Weather</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+<!-- ── End Carousel ── -->
+
+
+<div class="container my-5">
+
+  <!-- ── Feature Cards (Bootstrap Grid) ── -->
+  <h2 class="text-center mb-4 fw-bold">Why SmartHome Tracker?</h2>
+  <div class="row g-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 text-center shadow-sm border-0">
+        <div class="card-body">
+          <i class="bi bi-basket3-fill fs-1 text-success mb-3 d-block"></i>
+          <h5 class="card-title">Pantry & Fridge</h5>
+          <p class="card-text text-muted">Organize all your food items with quantities and expiry dates.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 text-center shadow-sm border-0">
+        <div class="card-body">
+          <i class="bi bi-capsule-pill fs-1 text-danger mb-3 d-block"></i>
+          <h5 class="card-title">Medicine Cabinet</h5>
+          <p class="card-text text-muted">Keep medicine inventory safe and always check expiry dates.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 text-center shadow-sm border-0">
+        <div class="card-body">
+          <i class="bi bi-bell-fill fs-1 text-warning mb-3 d-block"></i>
+          <h5 class="card-title">Expiry Alerts</h5>
+          <p class="card-text text-muted">Visual alerts for items expiring within 7 days or already expired.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100 text-center shadow-sm border-0">
+        <div class="card-body">
+          <i class="bi bi-people-fill fs-1 text-primary mb-3 d-block"></i>
+          <h5 class="card-title">Role-Based Access</h5>
+          <p class="card-text text-muted">Admin, Member, and Guest roles with fine-grained permissions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Weather Widget Section ── -->
+  <div id="weatherSection" class="row mt-5 justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <i class="bi bi-cloud-sun-fill me-2"></i>Live Weather (OpenWeatherMap)
+        </div>
+        <div class="card-body">
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" id="cityInput" placeholder="Enter city name..." value="Calgary">
+            <button class="btn btn-primary" id="weatherSearchBtn">
+              <i class="bi bi-search"></i> Search
+            </button>
+          </div>
+          <div id="weatherWidget">
+            <p class="text-muted"><i class="bi bi-hourglass-split"></i> Loading weather...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Call to Action ── -->
+  <div class="text-center mt-5">
+    <% if (!user) { %>
+      <h4 class="mb-3">Ready to organize your home?</h4>
+      <a href="/register" class="btn btn-success btn-lg me-2">
+        <i class="bi bi-person-plus me-1"></i>Create Account
+      </a>
+      <a href="/login" class="btn btn-outline-secondary btn-lg">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Login
+      </a>
+    <% } else { %>
+      <a href="/items/dashboard" class="btn btn-primary btn-lg">
+        <i class="bi bi-grid me-1"></i>Go to Dashboard
+      </a>
+    <% } %>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

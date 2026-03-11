@@ -1,0 +1,300 @@
+<%- include('partials/header') %>
+
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="bi bi-upc-scan me-2"></i>Barcode Scanner</h5>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted mb-3">
+            Scan a barcode with your camera or enter it manually to auto-fill product info and expiry date.
+          </p>
+
+          <!-- Manual Entry -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-upc"></i></span>
+            <input type="text" class="form-control" id="barcodeInput"
+                   placeholder="Enter barcode number (e.g. 4901085193198)" maxlength="14">
+            <button class="btn btn-info text-white" id="lookupBtn">
+              <i class="bi bi-search me-1"></i>Look Up
+            </button>
+          </div>
+
+          <!-- Camera Scanner -->
+          <div class="mb-3">
+            <button class="btn btn-outline-dark" id="startCameraBtn">
+              <i class="bi bi-camera me-1"></i>Start Camera Scanner
+            </button>
+            <button class="btn btn-outline-danger d-none" id="stopCameraBtn">
+              <i class="bi bi-stop-circle me-1"></i>Stop Camera
+            </button>
+          </div>
+
+          <div id="cameraContainer" class="d-none mb-3 position-relative"
+               style="max-width:100%;overflow:hidden;border-radius:12px;">
+            <div id="scanner-viewport" style="width:100%;"></div>
+          </div>
+
+          <!-- Status -->
+          <div id="scanStatus" class="d-none">
+            <div class="d-flex align-items-center gap-2">
+              <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+              <span>Looking up barcode...</span>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div id="scanError" class="alert alert-danger d-none"></div>
+        </div>
+      </div>
+
+      <!-- ── Product Result Card ── -->
+      <div id="productResult" class="card shadow border-0 d-none mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Product Found</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-3 text-center mb-3 mb-sm-0">
+              <img id="productImage" src="" alt="product" class="img-fluid rounded"
+                   style="max-height:120px; object-fit:contain;">
+            </div>
+            <div class="col-sm-9">
+              <h5 id="productName" class="fw-bold"></h5>
+              <p class="mb-1"><small class="text-muted">
+                <i class="bi bi-tag me-1"></i>Brand: <span id="productBrand"></span>
+              </small></p>
+              <p class="mb-1"><small class="text-muted">
+                <i class="bi bi-box me-1"></i>Quantity: <span id="productQty"></span>
+              </small></p>
+              <p class="mb-1"><small class="text-muted">
+                <i class="bi bi-clock-history me-1"></i>Shelf Life: <span id="productShelfLife"></span>
+              </small></p>
+              <p class="mb-0">
+                <i class="bi bi-calendar-event text-danger me-1"></i>
+                <strong>Suggested Expiry: <span id="productExpiry" class="text-danger"></span></strong>
+              </p>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Pre-filled form to add this item -->
+          <form action="/items/add" method="POST">
+            <input type="hidden" name="barcode" id="formBarcode">
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold">Item Name</label>
+                <input type="text" class="form-control" name="name" id="formName" required>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold">Category</label>
+                <select class="form-select" id="formCategory" name="category">
+                  <option value="fridge">Fridge</option>
+                  <option value="pantry">Pantry</option>
+                  <option value="medicine">Medicine</option>
+                  <option value="cleaning">Cleaning</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold">Quantity</label>
+                <input type="number" class="form-control" name="quantity" id="formQuantity" value="1" min="0">
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold">Unit</label>
+                <select class="form-select" name="unit" id="formUnit">
+                  <option value="pcs">pcs</option>
+                  <option value="L">L</option>
+                  <option value="mL">mL</option>
+                  <option value="kg">kg</option>
+                  <option value="g">g</option>
+                  <option value="box">box</option>
+                  <option value="bottle">bottle</option>
+                  <option value="pack">pack</option>
+                </select>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold">Expiry Date</label>
+                <input type="date" class="form-control" name="expiryDate" id="formExpiry">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold">Location</label>
+                <input type="text" class="form-control" name="location" value="Home">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label fw-semibold">Notes</label>
+                <input type="text" class="form-control" name="notes" id="formNotes" placeholder="Optional">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success w-100">
+              <i class="bi bi-plus-lg me-1"></i>Add to Inventory
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- QuaggaJS CDN for camera barcode scanning -->
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  const lookupBtn     = document.getElementById('lookupBtn');
+  const barcodeInput  = document.getElementById('barcodeInput');
+  const startCamBtn   = document.getElementById('startCameraBtn');
+  const stopCamBtn    = document.getElementById('stopCameraBtn');
+  const camContainer  = document.getElementById('cameraContainer');
+  const scanStatus    = document.getElementById('scanStatus');
+  const scanError     = document.getElementById('scanError');
+  const productResult = document.getElementById('productResult');
+
+  // ── Manual Lookup ──
+  lookupBtn.addEventListener('click', () => {
+    const code = barcodeInput.value.trim();
+    if (code) lookupBarcode(code);
+  });
+
+  barcodeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const code = barcodeInput.value.trim();
+      if (code) lookupBarcode(code);
+    }
+  });
+
+  // ── Camera Scanner ──
+  let cameraRunning = false;
+
+  startCamBtn.addEventListener('click', () => {
+    camContainer.classList.remove('d-none');
+    startCamBtn.classList.add('d-none');
+    stopCamBtn.classList.remove('d-none');
+    hideError();
+
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.getElementById('scanner-viewport'),
+        constraints: {
+          facingMode: "environment",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        }
+      },
+      decoder: {
+        readers: [
+          "ean_reader",
+          "ean_8_reader",
+          "upc_reader",
+          "upc_e_reader",
+          "code_128_reader"
+        ]
+      },
+      locate: true
+    }, (err) => {
+      if (err) {
+        showError('Camera access denied or not available. Please use manual entry.');
+        stopCamera();
+        return;
+      }
+      Quagga.start();
+      cameraRunning = true;
+    });
+
+    Quagga.onDetected((result) => {
+      const code = result.codeResult.code;
+      if (code) {
+        barcodeInput.value = code;
+        stopCamera();
+        lookupBarcode(code);
+      }
+    });
+  });
+
+  stopCamBtn.addEventListener('click', stopCamera);
+
+  function stopCamera() {
+    if (cameraRunning) {
+      Quagga.stop();
+      cameraRunning = false;
+    }
+    camContainer.classList.add('d-none');
+    stopCamBtn.classList.add('d-none');
+    startCamBtn.classList.remove('d-none');
+  }
+
+  // ── Barcode API Call ──
+  async function lookupBarcode(code) {
+    showLoading();
+    hideError();
+    productResult.classList.add('d-none');
+
+    try {
+      const res  = await fetch(`/api/barcode/${encodeURIComponent(code)}`);
+      const json = await res.json();
+      hideLoading();
+
+      if (!json.success) {
+        showError(json.message || 'Product not found.');
+        return;
+      }
+
+      fillProductResult(json.data);
+    } catch (err) {
+      hideLoading();
+      showError('Network error. Could not look up barcode.');
+    }
+  }
+
+  // ── Fill Product Card + Form ──
+  function fillProductResult(data) {
+    productResult.classList.remove('d-none');
+
+    document.getElementById('productName').textContent       = data.name || 'Unknown Product';
+    document.getElementById('productBrand').textContent      = data.brand || 'N/A';
+    document.getElementById('productQty').textContent        = data.quantity || 'N/A';
+    document.getElementById('productShelfLife').textContent   = data.shelfLife || 'Unknown';
+    document.getElementById('productExpiry').textContent      = data.suggestedExpiry || 'N/A';
+
+    const img = document.getElementById('productImage');
+    if (data.imageUrl) { img.src = data.imageUrl; img.classList.remove('d-none'); }
+    else { img.classList.add('d-none'); }
+
+    // Fill form
+    document.getElementById('formBarcode').value  = data.barcode || '';
+    document.getElementById('formName').value     = data.name || '';
+    document.getElementById('formExpiry').value    = data.suggestedExpiry || '';
+    document.getElementById('formNotes').value     = data.brand ? `Brand: ${data.brand}` : '';
+
+    // Set category select
+    const catSelect = document.getElementById('formCategory');
+    for (let opt of catSelect.options) {
+      opt.selected = (opt.value === data.category);
+    }
+
+    // Scroll to result
+    productResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function showLoading() { scanStatus.classList.remove('d-none'); }
+  function hideLoading() { scanStatus.classList.add('d-none'); }
+  function showError(msg) { scanError.textContent = msg; scanError.classList.remove('d-none'); }
+  function hideError() { scanError.classList.add('d-none'); }
+})();
+</script>
+
+<%- include('partials/footer') %>
