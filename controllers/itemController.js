@@ -1,5 +1,7 @@
 // controllers/itemController.js
 const DataMapperFactory = require('../utils/dataMapperFactory');
+const Notification = require('../models/Notification');
+const { generateExpiryNotifications } = require('./apiController');
 
 // Helper: determine expiry status
 function getExpiryStatus(item) {
@@ -16,14 +18,22 @@ function getExpiryStatus(item) {
 exports.getDashboard = async (req, res) => {
   const itemMapper = DataMapperFactory.createMapper('item');
   try {
+    // Generate expiry notifications on each dashboard load
+    await generateExpiryNotifications(req.session.user._id);
+
     const items = await itemMapper.findAll({ owner: req.session.user._id });
     const enriched = items.map(i => ({ ...i.toObject(), expiryStatus: getExpiryStatus(i) }));
     const expired  = enriched.filter(i => i.expiryStatus === 'expired');
     const soon     = enriched.filter(i => i.expiryStatus === 'soon');
-    res.render('dashboard', { items: enriched, expired, soon });
+
+    // Fetch unread notifications
+    const notifications = await Notification.find({ owner: req.session.user._id, read: false })
+      .sort({ createdAt: -1 }).limit(20).populate('item', 'name');
+
+    res.render('dashboard', { items: enriched, expired, soon, notifications });
   } catch (err) {
     console.error(err);
-    res.render('dashboard', { items: [], expired: [], soon: [] });
+    res.render('dashboard', { items: [], expired: [], soon: [], notifications: [] });
   }
 };
 
@@ -34,11 +44,12 @@ exports.getAddItem = (req, res) => {
 
 // POST /items/add
 exports.postAddItem = async (req, res) => {
-  const { name, category, quantity, unit, expiryDate, location, notes } = req.body;
+  const { name, barcode, category, quantity, unit, expiryDate, location, notes } = req.body;
   const itemMapper = DataMapperFactory.createMapper('item');
   try {
     await itemMapper.create({
-      name, category,
+      name, barcode: barcode || '',
+      category,
       quantity: Number(quantity) || 1,
       unit,
       expiryDate: expiryDate ? new Date(expiryDate) : null,
@@ -51,6 +62,11 @@ exports.postAddItem = async (req, res) => {
     console.error(err);
     res.render('addItem', { error: 'Failed to add item. Please try again.' });
   }
+};
+
+// GET /items/scan  (barcode scanner page)
+exports.getScanPage = (req, res) => {
+  res.render('scan');
 };
 
 // GET /items/edit/:id
@@ -69,11 +85,12 @@ exports.getEditItem = async (req, res) => {
 
 // POST /items/edit/:id
 exports.postEditItem = async (req, res) => {
-  const { name, category, quantity, unit, expiryDate, location, notes } = req.body;
+  const { name, barcode, category, quantity, unit, expiryDate, location, notes } = req.body;
   const itemMapper = DataMapperFactory.createMapper('item');
   try {
     await itemMapper.update(req.params.id, {
-      name, category,
+      name, barcode: barcode || '',
+      category,
       quantity: Number(quantity) || 1,
       unit,
       expiryDate: expiryDate ? new Date(expiryDate) : null,

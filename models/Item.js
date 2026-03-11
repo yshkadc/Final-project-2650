@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const ItemSchema = new mongoose.Schema({
   name:       { type: String, required: true, trim: true },
+  barcode:    { type: String, default: '' },
   category:   { type: String, enum: ['fridge', 'pantry', 'medicine', 'cleaning', 'other'], default: 'other' },
   quantity:   { type: Number, default: 1, min: 0 },
   unit:       { type: String, default: 'pcs' },

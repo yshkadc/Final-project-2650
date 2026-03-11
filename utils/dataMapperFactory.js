@@ -48,14 +48,15 @@ class DataMapper {
 class DataMapperFactory {
   static createMapper(type) {
     const registeredModels = {
-      user: () => require('../models/User'),
-      item: () => require('../models/Item'),
-      log:  () => require('../models/Log')
+      user:         () => require('../models/User'),
+      item:         () => require('../models/Item'),
+      log:          () => require('../models/Log'),
+      notification: () => require('../models/Notification')
     };
 
     const modelLoader = registeredModels[type.toLowerCase()];
     if (!modelLoader) {
-      throw new Error(`[DataMapperFactory] Unknown model type: "${type}". Valid types: user, item, log`);
+      throw new Error(`[DataMapperFactory] Unknown model type: "${type}". Valid types: user, item, log, notification`);
     }
 
     return new DataMapper(modelLoader());

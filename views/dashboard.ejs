@@ -7,11 +7,57 @@
     <h2 class="fw-bold mb-0">
       <i class="bi bi-grid-fill text-primary me-2"></i>My Inventory Dashboard
     </h2>
-    <% if (user && (user.role === 'admin' || user.role === 'member')) { %>
-      <a href="/items/add" class="btn btn-success">
-        <i class="bi bi-plus-lg me-1"></i>Add Item
-      </a>
-    <% } %>
+    <div class="d-flex gap-2 align-items-center">
+      <% if (user && (user.role === 'admin' || user.role === 'member')) { %>
+        <a href="/items/scan" class="btn btn-info text-white">
+          <i class="bi bi-upc-scan me-1"></i>Scan Barcode
+        </a>
+        <a href="/items/add" class="btn btn-success">
+          <i class="bi bi-plus-lg me-1"></i>Add Item
+        </a>
+      <% } %>
+
+      <!-- Notification Bell -->
+      <div class="dropdown">
+        <button class="btn btn-outline-dark position-relative" type="button"
+                data-bs-toggle="dropdown" data-bs-auto-close="outside">
+          <i class="bi bi-bell<%= notifications.length > 0 ? '-fill' : '' %>"></i>
+          <% if (notifications.length > 0) { %>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <%= notifications.length %>
+            </span>
+          <% } %>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end shadow" style="width:360px;max-height:400px;overflow-y:auto;">
+          <h6 class="dropdown-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-bell me-1"></i>Notifications</span>
+            <% if (notifications.length > 0) { %>
+              <button class="btn btn-sm btn-link text-decoration-none p-0" id="markAllReadBtn">
+                Mark all read
+              </button>
+            <% } %>
+          </h6>
+          <% if (notifications.length === 0) { %>
+            <div class="px-3 py-4 text-center text-muted">
+              <i class="bi bi-check-circle fs-4 d-block mb-1"></i>
+              No new notifications
+            </div>
+          <% } else { %>
+            <% notifications.forEach(n => { %>
+              <div class="dropdown-item d-flex gap-2 py-2 notification-item" data-id="<%= n._id %>">
+                <i class="bi bi-<%= n.type === 'expired' ? 'x-octagon-fill text-danger' :
+                                    n.type === 'expiring_3days' ? 'exclamation-triangle-fill text-warning' :
+                                    'info-circle-fill text-info' %> mt-1"></i>
+                <div class="small">
+                  <div><%= n.message %></div>
+                  <small class="text-muted"><%= new Date(n.createdAt).toLocaleString('en-CA') %></small>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── Stats Row (Bootstrap Grid) ── -->
@@ -234,6 +280,28 @@ function populateModal(btn) {
   document.getElementById('modal-expiry').textContent   = btn.dataset.expiry;
   document.getElementById('modal-notes').textContent    = btn.dataset.notes;
 }
+
+// Notification: Mark all read
+document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+  try {
+    await fetch('/api/notifications/read-all', { method: 'POST' });
+    document.querySelectorAll('.notification-item').forEach(el => el.remove());
+    const badge = document.querySelector('.dropdown .badge.bg-danger');
+    if (badge) badge.remove();
+  } catch (_) {}
+});
+
+// Request browser notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+// Show browser push notification for expired / expiring items
+<% if (notifications && notifications.length > 0 && notifications.some(n => n.type === 'expired' || n.type === 'expiring_3days')) { %>
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const notifMsg = '<%= notifications.filter(n => n.type === "expired" || n.type === "expiring_3days").length %> item(s) need your attention!';
+    new Notification('SmartHome Tracker', { body: notifMsg, icon: '/css/style.css' });
+  }
+<% } %>
 </script>
 
 <%- include('partials/footer') %>

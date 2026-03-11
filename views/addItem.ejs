@@ -18,6 +18,20 @@
 
           <form action="/items/add" method="POST" novalidate>
 
+            <!-- Barcode Quick-Fill -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Barcode (optional)</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="barcodeField" name="barcode"
+                       placeholder="Scan or enter barcode..." maxlength="14">
+                <button class="btn btn-info text-white" type="button" id="quickLookupBtn">
+                  <i class="bi bi-upc-scan me-1"></i>Look Up
+                </button>
+              </div>
+              <small class="text-muted">Auto-fills product name, category, and expiry date.</small>
+              <div id="lookupStatus" class="small mt-1 d-none"></div>
+            </div>
+
             <!-- Name -->
             <div class="mb-3">
               <label for="name" class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
@@ -97,3 +111,41 @@
 </div>
 
 <%- include('partials/footer') %>
+
+<script>
+(function() {
+  const lookupBtn = document.getElementById('quickLookupBtn');
+  const barcodeField = document.getElementById('barcodeField');
+  const statusDiv = document.getElementById('lookupStatus');
+  if (!lookupBtn) return;
+
+  lookupBtn.addEventListener('click', doLookup);
+  barcodeField.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLookup(); }});
+
+  async function doLookup() {
+    const code = barcodeField.value.trim();
+    if (!code) return;
+    statusDiv.classList.remove('d-none');
+    statusDiv.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split"></i> Looking up...</span>';
+    try {
+      const res = await fetch(`/api/barcode/${encodeURIComponent(code)}`);
+      const json = await res.json();
+      if (json.success) {
+        const d = json.data;
+        if (d.name) document.getElementById('name').value = d.name;
+        if (d.suggestedExpiry) document.getElementById('expiryDate').value = d.suggestedExpiry;
+        if (d.category) {
+          const sel = document.getElementById('category');
+          for (let o of sel.options) o.selected = (o.value === d.category);
+        }
+        if (d.brand) document.getElementById('notes').value = 'Brand: ' + d.brand;
+        statusDiv.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Found: ${d.name || 'Product'}</span>`;
+      } else {
+        statusDiv.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${json.message}</span>`;
+      }
+    } catch {
+      statusDiv.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Network error.</span>';
+    }
+  }
+})();
+</script>
