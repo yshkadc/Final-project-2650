@@ -104,7 +104,7 @@
         </div>
         <div class="card-body">
           <div class="input-group mb-3">
-            <input type="text" class="form-control" id="cityInput" placeholder="Enter city name..." value="Calgary">
+            <input type="text" class="form-control" id="cityInput" placeholder="Enter city name..." value="Vancouver">
             <button class="btn btn-primary" id="weatherSearchBtn">
               <i class="bi bi-search"></i> Search
             </button>
@@ -116,6 +116,26 @@
       </div>
     </div>
   </div>
+
+  <!-- Earthquake Widget (JMA - Japan Meteorological Agency) -->
+    <div class="card shadow-sm border-0 mt-3">
+      <div class="card-header bg-danger text-white">
+        <i class="bi bi-activity me-2"></i>地震情報 (JMA)
+        <button class="btn btn-sm btn-outline-light float-end" onclick="AppModule.fetchEarthquake()" title="更新">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+      <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+        <div id="earthquakeWidget">
+          <p class="text-muted small"><i class="bi bi-hourglass-split"></i> 読み込み中...</p>
+        </div>
+        <div class="mt-2 pt-2 border-top">
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>データ提供: 気象庁
+          </small>
+        </div>
+      </div>
+    </div>
 
 
   <!-- ── Call to Action ── -->
