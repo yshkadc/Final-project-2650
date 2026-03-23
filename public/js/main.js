@@ -8,13 +8,18 @@ const AppModule = (function () {
   // ── Private State ──────────────────────────────────────────────────────────
   let _weatherData = null;
   let _earthquakeData = null;
+  let _weatherCity = 'Vancouver';
+  const _REFRESH_INTERVAL_MS = 1000 * 60 * 10; // 10 minutes
 
   // ── Private Functions ──────────────────────────────────────────────────────
 
   // Fetch weather from our server API (which calls OpenWeatherMap)
   const _fetchWeather = async (city) => {
+    if (city && city.trim()) {
+      _weatherCity = city.trim();
+    }
     try {
-      const res  = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+      const res  = await fetch(`/api/weather?city=${encodeURIComponent(_weatherCity)}`);
       const json = await res.json();
       if (json.success) {
         _weatherData = json.data;
@@ -134,12 +139,25 @@ const AppModule = (function () {
     const input = document.getElementById('cityInput');
     if (btn && input) {
       btn.addEventListener('click', () => {
-        const city = input.value.trim() || 'Calgary';
+        const city = input.value.trim() || 'Vancouver';
         _fetchWeather(city);
       });
       input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); _fetchWeather(input.value.trim() || 'Calgary'); }
+        if (e.key === 'Enter') { e.preventDefault(); _fetchWeather(input.value.trim() || 'Vancouver'); }
       });
+    }
+  };
+
+  const _initAutoRefresh = () => {
+    const weatherWidget = document.getElementById('weatherWidget');
+    const earthquakeWidget = document.getElementById('earthquakeWidget');
+
+    if (weatherWidget) {
+      setInterval(() => _fetchWeather(_weatherCity), _REFRESH_INTERVAL_MS);
+    }
+
+    if (earthquakeWidget) {
+      setInterval(() => _fetchEarthquake(), _REFRESH_INTERVAL_MS);
     }
   };
 
@@ -159,10 +177,11 @@ const AppModule = (function () {
     _initDeleteConfirm();
     _initWeatherSearch();
     _initAutoDismissAlerts();
+    _initAutoRefresh();
 
     // Auto-load weather on dashboard
     const widget = document.getElementById('weatherWidget');
-    if (widget) _fetchWeather('Calgary');
+    if (widget) _fetchWeather('Vancouver');
 
     // Auto-load earthquake data on dashboard
     const earthquakeWidget = document.getElementById('earthquakeWidget');
