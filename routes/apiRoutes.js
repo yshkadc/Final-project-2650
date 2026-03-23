@@ -8,6 +8,9 @@ const { isAuthenticated } = require('../middleware/auth');
 // External API (OpenWeatherMap) – accessible to everyone (guest use on home page too)
 router.get('/weather',       api.getWeather);
 
+// External API (JMA - Japan Meteorological Agency) – earthquake information
+router.get('/earthquake',    api.getEarthquake);
+
 // External API (Open Food Facts) – barcode product lookup
 router.get('/barcode/:code', isAuthenticated, api.lookupBarcode);
 

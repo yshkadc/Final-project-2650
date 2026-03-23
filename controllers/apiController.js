@@ -7,6 +7,44 @@ const DataMapperFactory = require('../utils/dataMapperFactory');
 const Notification = require('../models/Notification');
 const Item = require('../models/Item');
 
+// ── External API: JMA (Japan Meteorological Agency) Earthquake Info ──────────
+// GET /api/earthquake
+// Fetches recent earthquake information from Japan Meteorological Agency
+exports.getEarthquake = async (req, res) => {
+  try {
+    // JMA provides earthquake list in JSON format (no API key required)
+    const response = await axios.get(
+      'https://www.jma.go.jp/bosai/quake/data/list.json',
+      { timeout: 10000 }
+    );
+
+    // Get the latest 10 earthquakes
+    const earthquakes = (response.data || []).slice(0, 10).map(eq => ({
+      id: eq.eid,
+      time: eq.at,           // Occurrence time
+      magnitude: eq.mag,     // Magnitude
+      maxIntensity: eq.maxi, // Maximum seismic intensity
+      epicenter: eq.anm,     // Epicenter name (Japanese)
+      depth: eq.dep,         // Depth (km)
+      tsunami: eq.ttl && eq.ttl.includes('津波') ? true : false,
+      title: eq.ttl          // Title/headline
+    }));
+
+    res.json({
+      success: true,
+      data: earthquakes,
+      source: 'Japan Meteorological Agency (気象庁)',
+      fetchedAt: new Date().toISOString()
+    });
+  } catch (err) {
+    if (err.code === 'ECONNABORTED') {
+      return res.status(504).json({ success: false, message: 'JMA API timed out.' });
+    }
+    const status = err.response?.status || 500;
+    res.status(status).json({ success: false, message: 'Earthquake data fetch failed.' });
+  }
+};
+
 // ── External API: OpenWeatherMap ──────────────────────────────────────────────
 // GET /api/weather?city=Calgary
 exports.getWeather = async (req, res) => {
