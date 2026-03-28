@@ -63,25 +63,41 @@
   <!-- ── Stats Row (Bootstrap Grid) ── -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-      <div class="dash-stat bg-primary text-white shadow-sm">
+      <div class="dash-stat dash-stat-total shadow-sm" role="status" aria-label="Total Items">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <i class="bi bi-box-seam fs-4" aria-hidden="true"></i>
+          <span class="small fw-semibold text-uppercase">Total</span>
+        </div>
         <div class="fs-2 fw-bold"><%= items.length %></div>
         <div class="small">Total Items</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="dash-stat bg-danger text-white shadow-sm">
+      <div class="dash-stat dash-stat-expired shadow-sm" role="status" aria-label="Expired Items">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <i class="bi bi-x-octagon fs-4" aria-hidden="true"></i>
+          <span class="small fw-semibold text-uppercase">Alert</span>
+        </div>
         <div class="fs-2 fw-bold"><%= expired.length %></div>
         <div class="small">Expired</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="dash-stat bg-warning text-dark shadow-sm">
+      <div class="dash-stat dash-stat-soon shadow-sm" role="status" aria-label="Expiring Soon Items">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <i class="bi bi-hourglass-split fs-4" aria-hidden="true"></i>
+          <span class="small fw-semibold text-uppercase">Soon</span>
+        </div>
         <div class="fs-2 fw-bold"><%= soon.length %></div>
         <div class="small">Expiring Soon</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="dash-stat bg-success text-white shadow-sm">
+      <div class="dash-stat dash-stat-good shadow-sm" role="status" aria-label="Good Items">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <i class="bi bi-check-circle fs-4" aria-hidden="true"></i>
+          <span class="small fw-semibold text-uppercase">OK</span>
+        </div>
         <div class="fs-2 fw-bold"><%= items.filter(i => i.expiryStatus === 'ok').length %></div>
         <div class="small">Good</div>
       </div>
@@ -316,9 +332,19 @@ if ('Notification' in window && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 // Show browser push notification for expired / expiring items
-<% if (notifications && notifications.length > 0 && notifications.some(n => n.type === 'expired' || n.type === 'expiring_3days')) { %>
+<%
+  let attentionCount = 0;
+  if (notifications && notifications.length > 0) {
+    for (const n of notifications) {
+      if (n.type === 'expired' || n.type === 'expiring_3days') {
+        attentionCount++;
+      }
+    }
+  }
+%>
+<% if (attentionCount > 0) { %>
   if ('Notification' in window && Notification.permission === 'granted') {
-    const notifMsg = '<%= notifications.filter(n => n.type === "expired" || n.type === "expiring_3days").length %> item(s) need your attention!';
+    const notifMsg = '<%= attentionCount %> item(s) need your attention!';
     new Notification('SmartHome Tracker', { body: notifMsg, icon: '/css/style.css' });
   }
 <% } %>

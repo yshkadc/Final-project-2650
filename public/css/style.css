@@ -59,7 +59,28 @@ body {
 .dash-stat {
   border-radius: 12px;
   padding: 20px;
-  text-align: center;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dash-stat .small {
+  opacity: 0.95;
+}
+
+.dash-stat-total {
+  background: #1d4ed8;
+}
+
+.dash-stat-expired {
+  background: #b91c1c;
+}
+
+.dash-stat-soon {
+  background: #92400e;
+}
+
+.dash-stat-good {
+  background: #166534;
 }
 
 /* ── Admin table ── */
